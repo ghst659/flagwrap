@@ -12,8 +12,12 @@ declare -A appendable=( \
   [--leaf_arg]="" \
 )
 
-function set_user_flag () {
-    IFS='=' read -r key value  <<< "$1"
+function set_user_flag {
+    local canonical="$1"
+    if [[ "${canonical}" =~ --no ]]; then
+        canonical="--${canonical#--no}=false"
+    fi
+    IFS='=' read -r key value  <<< "${canonical}"
     if [[ -n "${appendable[${key}]+APPEND}" ]]; then
         appendable["${key}"]+=" ${value}"
     else
@@ -21,7 +25,7 @@ function set_user_flag () {
     fi
 }
 
-function main() {
+function main {
     for kv in "$@"; do
         set_user_flag "${kv}"
     done
